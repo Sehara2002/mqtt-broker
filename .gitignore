@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Environment
+.env
+
+# Keys
+*.pem
+id_rsa
+id_rsa.pub
+
+# Logs
+*.log
+
+# VSCode
+.vscode/
+
+# Docker
+docker-compose.override.yml
+
+# OS
+.DS_Store
+
+mqtt-broker/
+mqtt-broker

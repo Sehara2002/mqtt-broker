@@ -1,0 +1,10 @@
+services:
+  mqtt-broker:
+    build: .
+    container_name: mqtt-broker
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "1883:1883"
+      - "8080:8080"
