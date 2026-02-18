@@ -1,8 +1,71 @@
-<html>
-	<head>
-		<title>MQTT Broker dashboard</title>
-	</head>
-	<body>
-		<h1>This is a dummy</h1>
-	</body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MQTT Broker Dashboard</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>MQTT Broker Dashboard</h1>
+      <div class="sub">
+        <span id="statusDot" class="dot"></span>
+        <span id="statusText">Connecting…</span>
+      </div>
+    </header>
+
+    <section class="cards">
+      <div class="card">
+        <div class="label">Connected Clients</div>
+        <div id="clients" class="value">0</div>
+      </div>
+      <div class="card">
+        <div class="label">Publishes Total</div>
+        <div id="publishes" class="value">0</div>
+      </div>
+      <div class="card">
+        <div class="label">Messages / sec</div>
+        <div id="msgRate" class="value">0</div>
+      </div>
+      <div class="card">
+        <div class="label">Uptime (sec)</div>
+        <div id="uptime" class="value">0</div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="panel">
+        <h2>Messages / sec (last 60s)</h2>
+        <canvas id="rateChart"></canvas>
+      </div>
+      <div class="panel">
+        <h2>Connected Clients (last 60s)</h2>
+        <canvas id="clientsChart"></canvas>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Live Events (last 25)</h2>
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Clients</th>
+              <th>Publishes</th>
+              <th>Msg/s</th>
+            </tr>
+          </thead>
+          <tbody id="eventsTable"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
 </html>
