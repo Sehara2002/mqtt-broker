@@ -16,16 +16,17 @@ function nowTime() {
   return new Date().toLocaleTimeString();
 }
 
-function pushRow(data) {
+function pushRow(data, rate) {
   const tr = document.createElement("tr");
   tr.innerHTML = `
     <td>${nowTime()}</td>
-    <td>${data.clients}</td>
-    <td>${data.publishes_total}</td>
-    <td>${data.msg_rate}</td>
+    <td>${data.clients ?? 0}</td>
+    <td>${data.publishes_total ?? 0}</td>
+    <td>${rate.toFixed(2)}</td>
+    <td>${data.bytes_in_total ?? 0}</td>
+    <td>${data.bytes_out_total ?? 0}</td>
   `;
   eventsTable.prepend(tr);
-
   while (eventsTable.children.length > 25) {
     eventsTable.removeChild(eventsTable.lastChild);
   }
@@ -43,12 +44,7 @@ const rateChart = new Chart(rateCtx, {
   type: "line",
   data: {
     labels,
-    datasets: [{
-      label: "msg/sec",
-      data: rateSeries,
-      tension: 0.25,
-      fill: false
-    }]
+    datasets: [{ label: "publishes/sec", data: rateSeries, tension: 0.25, fill: false }]
   },
   options: { animation: false, responsive: true, scales: { y: { beginAtZero: true } } }
 });
@@ -57,20 +53,34 @@ const clientsChart = new Chart(clientsCtx, {
   type: "line",
   data: {
     labels,
-    datasets: [{
-      label: "clients",
-      data: clientsSeries,
-      tension: 0.25,
-      fill: false
-    }]
+    datasets: [{ label: "clients", data: clientsSeries, tension: 0.25, fill: false }]
   },
   options: { animation: false, responsive: true, scales: { y: { beginAtZero: true } } }
 });
 
-function pushPoint(data) {
+// Compute publishes/sec from publishes_total delta
+let lastPublishes = null;
+let lastTs = null;
+
+function computeRate(publishesTotal) {
+  const now = Date.now();
+  if (lastPublishes === null) {
+    lastPublishes = publishesTotal;
+    lastTs = now;
+    return 0;
+  }
+  const dp = publishesTotal - lastPublishes;
+  const dt = (now - lastTs) / 1000.0;
+  lastPublishes = publishesTotal;
+  lastTs = now;
+  if (dt <= 0) return 0;
+  return dp / dt;
+}
+
+function pushPoint(rate, clients) {
   labels.push(nowTime());
-  rateSeries.push(data.msg_rate);
-  clientsSeries.push(data.clients);
+  rateSeries.push(rate);
+  clientsSeries.push(clients);
 
   if (labels.length > 60) {
     labels.shift();
@@ -82,7 +92,6 @@ function pushPoint(data) {
   clientsChart.update();
 }
 
-// Live stream (SSE)
 let es = null;
 
 function connectSSE() {
@@ -93,7 +102,7 @@ function connectSSE() {
 
   es.onopen = () => setStatus(true, "Live");
   es.onerror = () => {
-    setStatus(false, "Disconnected - retrying…");
+    setStatus(false, "Disconnected — retrying…");
     try { es.close(); } catch {}
     setTimeout(connectSSE, 1500);
   };
@@ -101,13 +110,17 @@ function connectSSE() {
   es.onmessage = (evt) => {
     const data = JSON.parse(evt.data);
 
-    clientsEl.textContent = data.clients;
-    publishesEl.textContent = data.publishes_total;
-    msgRateEl.textContent = data.msg_rate;
-    uptimeEl.textContent = data.uptime_sec;
+    const publishesTotal = data.publishes_total ?? 0;
+    const rate = computeRate(publishesTotal);
+    const clients = data.clients ?? 0;
 
-    pushPoint(data);
-    pushRow(data);
+    clientsEl.textContent = clients;
+    publishesEl.textContent = publishesTotal;
+    msgRateEl.textContent = rate.toFixed(2);
+    uptimeEl.textContent = (data.uptime_sec ?? 0);
+
+    pushPoint(rate, clients);
+    pushRow(data, rate);
   };
 }
 

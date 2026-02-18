@@ -4,66 +4,84 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MQTT Broker Dashboard</title>
-  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
+
   <div class="container">
-    <header>
-      <h1>MQTT Broker Dashboard</h1>
-      <div class="sub">
+
+    <div class="topbar">
+      <div class="brand">
+        <h1>MQTT Broker Dashboard</h1>
+        <div class="subtitle">Live monitoring: clients, publishes, throughput</div>
+      </div>
+
+      <div class="pill">
         <span id="statusDot" class="dot"></span>
         <span id="statusText">Connecting…</span>
       </div>
-    </header>
+    </div>
 
-    <section class="cards">
+    <div class="grid-cards">
       <div class="card">
-        <div class="label">Connected Clients</div>
-        <div id="clients" class="value">0</div>
+        <div class="label">Connected Clients <span class="badge" id="clientsBadge">Live</span></div>
+        <div class="value" id="clients">0</div>
       </div>
-      <div class="card">
-        <div class="label">Publishes Total</div>
-        <div id="publishes" class="value">0</div>
-      </div>
-      <div class="card">
-        <div class="label">Messages / sec</div>
-        <div id="msgRate" class="value">0</div>
-      </div>
-      <div class="card">
-        <div class="label">Uptime (sec)</div>
-        <div id="uptime" class="value">0</div>
-      </div>
-    </section>
 
-    <section class="grid">
+      <div class="card">
+        <div class="label">Publishes Total <span class="badge">All time</span></div>
+        <div class="value" id="publishes">0</div>
+      </div>
+
+      <div class="card">
+        <div class="label">Publishes / sec <span class="badge">last 1s</span></div>
+        <div class="value" id="msgRate">0</div>
+      </div>
+
+      <div class="card">
+        <div class="label">Uptime <span class="badge">seconds</span></div>
+        <div class="value" id="uptime">0</div>
+      </div>
+    </div>
+
+    <div class="grid-panels">
       <div class="panel">
-        <h2>Messages / sec (last 60s)</h2>
+        <h2>Publishes / sec (last 60s)</h2>
+        <div class="hint">Real-time rate computed in browser using publishes_total deltas.</div>
         <canvas id="rateChart"></canvas>
       </div>
+
       <div class="panel">
-        <h2>Connected Clients (last 60s)</h2>
+        <h2>Connected clients (last 60s)</h2>
+        <div class="hint">Tracks current clients value over time.</div>
         <canvas id="clientsChart"></canvas>
       </div>
-    </section>
+    </div>
 
-    <section class="panel">
-      <h2>Live Events (last 25)</h2>
+    <div class="panel">
+      <h2>Live snapshot feed (last 25)</h2>
       <div class="tableWrap">
         <table>
           <thead>
             <tr>
               <th>Time</th>
               <th>Clients</th>
-              <th>Publishes</th>
-              <th>Msg/s</th>
+              <th>Publishes total</th>
+              <th>Publishes/sec</th>
+              <th>Bytes in</th>
+              <th>Bytes out</th>
             </tr>
           </thead>
           <tbody id="eventsTable"></tbody>
         </table>
       </div>
-    </section>
+    </div>
+
+    <div class="footer">
+      Tip: keep <code>/metrics</code> private; expose dashboard only if needed.
+    </div>
+
   </div>
 
   <script src="/static/app.js"></script>
